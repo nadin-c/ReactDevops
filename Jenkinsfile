@@ -7,27 +7,47 @@ pipeline {
         CONTAINER_NAME = "jenkins-docker-container"
         PORT = "8080"
         DOCKER_CREDENTIALS = credentials('docker-hub-creds')
+        NODE_ENV = 'production'
     }
 
     stages {
-        stage('Code Quality') {
-            steps {
-                echo "Running code quality checks..."
-                sh 'npm install'
-                sh 'npm run lint || true'
-                sh 'npm run test:ci || true'
-            }
-        }
-
-        stage('Clone Repository') {
+        stage('Install Dependencies') {
             steps {
                 script {
                     try {
-                        echo "Cloning GitHub repository..."
-                        git branch: 'main',
-                            url: 'https://github.com/nadin-c/ReactDevops.git'
+                        echo "Installing Node.js dependencies..."
+                        sh 'npm ci'  // Uses package-lock.json for deterministic builds
                     } catch (Exception e) {
-                        error "Failed to clone repository: ${e.message}"
+                        error "Failed to install dependencies: ${e.message}"
+                    }
+                }
+            }
+        }
+
+        stage('Code Quality & Tests') {
+            steps {
+                script {
+                    try {
+                        echo "Running code quality checks..."
+                        sh 'npm run lint || true'
+                        sh 'npm run test:ci || true'
+                    } catch (Exception e) {
+                        echo "Warning: Code quality checks failed but continuing: ${e.message}"
+                    }
+                }
+            }
+        }
+
+        stage('Build React App') {
+            steps {
+                script {
+                    try {
+                        echo "Building React application..."
+                        sh 'npm run build'
+                        // Verify build output exists
+                        sh 'test -d build || (echo "Build directory not found" && exit 1)'
+                    } catch (Exception e) {
+                        error "React build failed: ${e.message}"
                     }
                 }
             }
@@ -38,8 +58,14 @@ pipeline {
                 script {
                     try {
                         echo "Building Docker image..."
-                        sh 'chmod +x build.sh'
-                        sh './build.sh'
+                        sh """
+                            docker build \
+                                --no-cache \
+                                -t ${IMAGE_NAME}:${TAG} \
+                                -t ${IMAGE_NAME}:latest \
+                                --build-arg NODE_ENV=${NODE_ENV} \
+                                .
+                        """
                     } catch (Exception e) {
                         error "Docker build failed: ${e.message}"
                     }
@@ -95,22 +121,24 @@ pipeline {
     }
 
     post {
+        always {
+            echo "Cleaning up workspace..."
+            cleanWs()
+            sh 'docker system prune -f || true'
+        }
         success {
             echo "Pipeline completed successfully!"
             slackSend(
                 color: 'good',
-                message: "Build #${BUILD_NUMBER} - Deployment Successful!"
+                message: "Build #${BUILD_NUMBER} - ${env.JOB_NAME} deployed successfully!\nImage: ${IMAGE_NAME}:${TAG}"
             )
         }
         failure {
             echo "Pipeline failed!"
             slackSend(
                 color: 'danger',
-                message: "Build #${BUILD_NUMBER} - Deployment Failed!"
+                message: "Build #${BUILD_NUMBER} - ${env.JOB_NAME} failed!\nCheck logs: ${env.BUILD_URL}"
             )
-        }
-        always {
-            cleanWs()
         }
     }
 }
