@@ -25,7 +25,7 @@ pipeline {
                     try {
                         echo "Cloning GitHub repository..."
                         git branch: 'main',
-                            url: 'https://github.com/nadin-c/ReactTodoList.git'
+                            url: 'https://github.com/nadin-c/ReactDevops.git'
                     } catch (Exception e) {
                         error "Failed to clone repository: ${e.message}"
                     }
