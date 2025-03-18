@@ -8,9 +8,23 @@ pipeline {
         PORT = "8080"
         DOCKER_CREDENTIALS = credentials('docker-hub-creds')
         NODE_ENV = 'production'
+        BUILD_OUTPUT_DIR = 'build'
     }
 
     stages {
+        stage('Prepare Workspace') {
+            steps {
+                script {
+                    try {
+                        echo "Cleaning workspace..."
+                        sh 'rm -rf ${BUILD_OUTPUT_DIR} || true'
+                    } catch (Exception e) {
+                        error "Workspace preparation failed: ${e.message}"
+                    }
+                }
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 script {
@@ -61,6 +75,7 @@ pipeline {
                         sh """
                             docker build \
                                 --no-cache \
+                                --progress=plain \
                                 -t ${IMAGE_NAME}:${TAG} \
                                 -t ${IMAGE_NAME}:latest \
                                 --build-arg NODE_ENV=${NODE_ENV} \
