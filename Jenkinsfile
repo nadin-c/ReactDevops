@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "nadinc/docker1"
+        IMAGE_NAME = "nadinc/react_project"
         TAG = "${BUILD_NUMBER}-${sh(script: 'date +%Y%m%d-%H%M%S', returnStdout: true).trim()}"
         CONTAINER_NAME = "jenkins-docker-container"
         PORT = "8080"
