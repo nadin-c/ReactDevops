@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-IMAGE_NAME="nadinc/docker1"
+IMAGE_NAME="nadinc/react_project"
 CONTAINER_NAME="jenkins-docker-container"
 HOST_PORT=8080
 CONTAINER_PORT=80
