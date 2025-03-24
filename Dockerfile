@@ -2,7 +2,6 @@
 FROM node:18 as build
 
 # Add build arguments
-ARG NODE_ENV=production
 ARG BUILD_DATE
 ARG VERSION
 
@@ -17,15 +16,13 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install dependencies (including devDependencies)
-# Ensure vite and other build tools are available
-RUN npm install --legacy-peer-deps
+# Install all dependencies, including devDependencies
+RUN npm install --include=dev
 
 # Copy source files
 COPY . .
 
-# Set development mode for build to include devDependencies
-ENV NODE_ENV=development 
+# Build the application
 RUN npm run build
 
 # 🌟 Stage 2: Serve with NGINX
