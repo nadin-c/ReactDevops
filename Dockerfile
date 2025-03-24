@@ -1,6 +1,16 @@
 # Build stage
 FROM node:18-alpine as builder
 
+# Add build arguments
+ARG NODE_ENV=production
+ARG BUILD_DATE
+ARG VERSION
+
+# Add labels
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
+LABEL org.opencontainers.image.version="${VERSION}"
+LABEL org.opencontainers.image.description="React Todo List Application"
+
 WORKDIR /app
 
 # Copy package files
@@ -13,6 +23,7 @@ RUN npm ci
 COPY . .
 
 # Build the application
+ENV NODE_ENV=${NODE_ENV}
 RUN npm run build
 
 # Production stage

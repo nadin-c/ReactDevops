@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Variables
-IMAGE_NAME="nadinc/docker1"
+IMAGE_NAME="nadinc/guvi_final_prj"
 VERSION=$(date +%Y%m%d_%H%M%S)
 TAG="v${VERSION}"
 
