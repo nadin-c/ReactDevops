@@ -10,5 +10,8 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true
+  },
+  devDependencies: {
+    vite: "^4.0.0"
   }
 });
