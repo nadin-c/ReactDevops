@@ -24,8 +24,8 @@ RUN npm install --legacy-peer-deps
 # Copy source files
 COPY . .
 
-# Build the application
-ENV NODE_ENV=development  # Use development mode during build to include devDependencies
+# Set development mode for build to include devDependencies
+ENV NODE_ENV=development 
 RUN npm run build
 
 # 🌟 Stage 2: Serve with NGINX
